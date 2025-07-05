@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  img-src 'self' data:;
+  style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+  font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;">
+    <title>Puzzle de Imagens - Aprender a Fazer Games com IA</title>
+    <meta name="description" content="Monte puzzle s interativos com imagens da nossa biblioteca ou do seu disco.">
+    <meta name="keywords" content="puzzle, imagens, IA, codar jogos, tutorial">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container" >
+            <div id="div-puzzle-logo">
+                <img id="puzzle-logo" src="images/logo-aprender-codar-games-ia.png" alt="Imagem do Puzzle">
+            </div>
+            
+        </div>
+    </header>
+
+    <main>
+        <section id="auth-section">
+             <div id="login-form" *ngIf="exibe">
+                <h2>Login</h2>
+                <input type="email" id="login-email" placeholder="E-mail" required>
+                <input type="password" id="login-password" placeholder="Senha" required>
+                <button class="cta-button" id="login-button">Entrar</button>
+                <p>Não tem conta? <a href="#" id="showRegister">Cadastre-se</a></p>
+            </div>
+            <div id="register-form" *ngIf="exibe">
+                <h2>Cadastro</h2>
+                <input type="email" id="register-email" placeholder="E-mail" required>
+                <input type="password" id="register-password" placeholder="Senha" required>
+                <label><input type="checkbox" id="consent" required> Eu concordo com a coleta e uso do meu e-mail para jogar, conforme a LGPD.</label>
+                <button class="cta-button" id="register-button">Cadastrar</button>
+                <p>Já tem conta? <a href="#" id="showLogin">Fazer login</a></p>
+                <button class="cta-button" id="delete-account-button">Excluir Conta</button>
+
+            </div>
+        </section>
+        <section id="puzzle">
+            <div class="row">
+                <div class="puzzle-layout">
+                    <div id="puzzle-preview">
+                        <img id="preview-image" src="" alt="Imagem do Puzzle">
+                    </div>
+                    <div id="puzzle-board-container">
+                        <div id="puzzle-board"></div>
+                    </div>
+                    <div id="piece-column" ></div>
+                </div>
+                <div class="div-cuts">
+                    <label for="cuts"  id="titulo-cuts">Número de cortes:</label>
+                    <select id="cuts">
+                        <option value="16">4x4 (16 peças)</option>
+                        <option value="36">6x6 (36 peças)</option>
+                        <option value="64">8x8 (64 peças)</option>
+                    </select>
+                </div>
+                <div class="div-select-image">
+                    <label for="image-select" id="titulo-image">Escolher da biblioteca:</label>
+                    <select id="image-select">
+                        <option value="">Selecione imagem</option>
+                    </select>
+                </div>
+                <div class="div-btn-iniciar">
+                    <canvas id="puzzle-canvas"></canvas>
+                    <button class="cta-button" id="start-puzzle-button">Iniciar Puzzle</button>
+                </div>
+                <div class="progress">
+                    <label for="image-upload" class="titulo-progress">Progresso:</label><br>
+                    <div class="div-placar">
+                        <label id="corretas"></label>
+                        <label id="total"></label>
+                        <label id="percentual"></label><br>
+                        <label id="tempototal"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="div-carregar-image">
+                <label for="image-upload" id="btn-image-upload">Carregar imagem:</label><br>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+            <div class="div-btn-iniciar">
+                 <button class="cta-button" id="delete-conta-button">Excluir Conta</button>
+            </div>
+           
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Aprender a Fazer Games com IA. Todos os direitos reservados.</p>
+        <div class="social-links">
+            <link rel="stylesheet" href="">
+           <a href="https://github.com/seu-usuario/chessgame"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://twitter.com/aprendercodargames">Twitter</a>
+        </div>
+    </footer>
+
+    <script src="puzzle.js"></script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
