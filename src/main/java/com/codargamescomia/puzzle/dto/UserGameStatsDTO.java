@@ -1,35 +1,68 @@
 package com.codargamescomia.puzzle.dto;
 
+import java.util.Date;
+
+import com.codargamescomia.puzzle.entity.UserGameSession;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class UserGameStatsDTO {
+
     private int percentualAcertos;
     private long tempoTotalJogado;
     private long totalCortes;
     private String image;
-    private String data;
+    private Date date;
+    private String user;
 
-    public int getPercentualAcertos() {
-        return percentualAcertos;
+    // ✅ Construtor que aceita UserGameSession
+    public UserGameStatsDTO(UserGameSession session) {
+        this.percentualAcertos = session.getPercentualAcertos();
+        this.tempoTotalJogado = session.getTempoTotalJogado();
+        this.totalCortes = session.getTotalCortes();
+        this.image = session.getImage();
+        this.date = session.getDate();
+        this.user = session.getUser().getEmail();
     }
 
-    public void setPercentualAcertos(int percentualAcertos) {
-        this.percentualAcertos = percentualAcertos;
+    // Construtor padrão (necessário para Jackson ou outras libs)
+    public UserGameStatsDTO() {
     }
 
-    public long getTempoTotalJogado() {
-        return tempoTotalJogado;
-    }
+	public String getUser() {
+		return user;
+	}
 
-    public void setTempoTotalJogado(long tempoTotalJogado) {
-        this.tempoTotalJogado = tempoTotalJogado;
-    }
+	public void setUser(String user) {
+		this.user = user;
+	}
 
-    public long getTotalCortes() {
-        return totalCortes;
-    }
+	public int getPercentualAcertos() {
+		return percentualAcertos;
+	}
 
-    public void setTotalCortes(long totalCortes) {
-        this.totalCortes = totalCortes;
-    }
+	public void setPercentualAcertos(int percentualAcertos) {
+		this.percentualAcertos = percentualAcertos;
+	}
+
+	public long getTempoTotalJogado() {
+		return tempoTotalJogado;
+	}
+
+	public void setTempoTotalJogado(long tempoTotalJogado) {
+		this.tempoTotalJogado = tempoTotalJogado;
+	}
+
+	public long getTotalCortes() {
+		return totalCortes;
+	}
+
+	public void setTotalCortes(long totalCortes) {
+		this.totalCortes = totalCortes;
+	}
 
 	public String getImage() {
 		return image;
@@ -39,12 +72,12 @@ public class UserGameStatsDTO {
 		this.image = image;
 	}
 
-	public String getData() {
-		return data;
+	public Date getDate() {
+		return date;
 	}
 
-	public void setData(String data) {
-		this.data = data;
+	public void setDate(Date date) {
+		this.date = date;
 	}
     
     
