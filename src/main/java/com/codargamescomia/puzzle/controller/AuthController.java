@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,13 +20,21 @@ import com.codargamescomia.puzzle.entity.User;
 import com.codargamescomia.puzzle.entity.UserGameSession;
 import com.codargamescomia.puzzle.repository.UserGameSessionRepository;
 import com.codargamescomia.puzzle.repository.UserRepository;
+import com.codargamescomia.puzzle.util.JwtUtil;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
+
+@CrossOrigin(
+	    origins = {
+	        "https://puzzlegame.onrender.com",
+	        "http://localhost:5500"
+	    }
+	)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -35,29 +44,31 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private UserGameSessionRepository sessionRepository;
 
-
-    private final String SECRET_KEY = System.getenv("JWT_SECRET");
-
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+    	
+
         if (userRepository.findByEmail(request.getEmail()) != null) {
             return ResponseEntity.badRequest().body("E-mail já registrado");
         }
+        if (!request.getConsentGiven()) {
+            return ResponseEntity.badRequest().body("Consentimento necessário");
+        }
+        
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setConsentGiven(request.isConsentGiven());
-        System.out.println(user.isConsentGiven());
+        user.setConsentGiven(request.getConsentGiven());
         user.setPremium(false);
-        if (user.isConsentGiven()) {
-            return ResponseEntity.badRequest().body("Consentimento necessário");
-        }
         userRepository.save(user);
+
         return ResponseEntity.ok("Usuário registrado com sucesso");
     }
 
@@ -67,78 +78,57 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body(null);
         }
-        String token = Jwts.builder()
-                .setSubject(user.getEmail()).setIssuer(SECRET_KEY)
-                //.signWith(SECRET_KEY)
-                .compact();
+
+        String token = jwtUtil.generateToken(user.getEmail());
+
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail(user.getEmail());
         userDTO.setToken(token);
-        if(user.isPremium()) {
-        	userDTO.setPremium(true);
-        }else {
-        	userDTO.setPremium(false);
-        }
+        userDTO.setPremium(user.isPremium());
+
         return ResponseEntity.ok(userDTO);
-        
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token) {
-        String email = Jwts.parser()
-            .setSigningKey(SECRET_KEY)
-            .parseClaimsJws(token.substring(7))
-            .getBody()
-            .getSubject();
+    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.validateToken(token);
+        String email = claims.getSubject();
+
         User user = userRepository.findByEmail(email);
         if (user == null) {
             return ResponseEntity.badRequest().body("Usuário não encontrado");
         }
+
         userRepository.delete(user);
         return ResponseEntity.ok("Conta excluída com sucesso");
     }
-    
+
     @PostMapping("/users")
     public List<User> listUsers() {
-        List<User> users = userRepository.findAll();
-        if (users.size() <= 0) {
-            return null;
-        }
-        return users;
+        return userRepository.findAll();
     }
-    
+
     @PostMapping("/email")
-    public User getByUserId(String email) {
-    	List<User> users = userRepository.findAll();
-        if (users.size() <= 0) {
-            return null;
-        }
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            return null;
-        }
-        return user;
+    public User getByUserId(@RequestBody String email) {
+        return userRepository.findByEmail(email);
     }
-    
+
     @PostMapping("/save-game-stats")
     public ResponseEntity<String> saveGameStats(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader("Authorization") String authHeader,
             @RequestBody UserGameStatsDTO statsDTO) {
 
-        String email = Jwts.parser()
-            .setSigningKey(SECRET_KEY)
-            .parseClaimsJws(token.substring(7))
-            .getBody()
-            .getSubject();
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.validateToken(token);
+        String email = claims.getSubject();
 
         User user = userRepository.findByEmail(email);
         if (user == null) {
             return ResponseEntity.badRequest().body("Usuário não encontrado");
         }
 
-        // ✅ Só salva se for premium
-        boolean isPremium = userHasPremiumAccess(user);
-        if (!isPremium) {
+        if (!user.isPremium()) {
             return ResponseEntity.ok("Dados não salvos - usuário sem acesso premium.");
         }
 
@@ -154,39 +144,23 @@ public class AuthController {
 
         return ResponseEntity.ok("Sessão salva com sucesso!");
     }
-
-    private boolean userHasPremiumAccess(User user) {
-    	if(user.getEmail() != null && !user.isPremium()) {
-    		return false;
-    	}
-    	// Aqui você define a lógica de premium.
-        // Exemplo: e-mails específicos ou flag no futuro.
-        return user.isPremium();
-        
-        // Ou:
-        // return user.isPremium(); // se futuramente criar esse campo
-    }
-
-
-    
 }
 
-
+// DTOs internos
 class RegisterRequest {
     @Email
     @NotBlank
     private String email;
     @NotBlank
     private String password;
+    @NotNull
     private boolean consentGiven;
-    
-
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public boolean isConsentGiven() { return consentGiven; }
+    public boolean getConsentGiven() { return consentGiven; }
     public void setConsentGiven(boolean consentGiven) { this.consentGiven = consentGiven; }
 }
 
