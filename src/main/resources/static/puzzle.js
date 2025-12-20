@@ -21,7 +21,8 @@ document.getElementById("total").textContent = "Tentativas: " + total;
 percentualAcertos = total == 0 ? 0 : Math.round((corretas / total) * 100);
 document.getElementById("percentual").textContent = "Percentual: " + percentualAcertos + "%";
 document.getElementById("tempototal").textContent = "Tempo total: 0 minutos";
-
+document.getElementById('user-history-modal').style.display = 'none';
+document.getElementById('user-ranking-modal').style.display = 'none';
 
 // Verificar autenticação ao carregar
 /*window.onload = () => {
@@ -42,6 +43,8 @@ function showLogin() {
     document.getElementById('login-form').style.display = 'block';
     document.getElementById('register-form').style.display = 'none';
     document.getElementById('puzzle').style.display = 'none';
+    document.getElementById('user-history-modal').style.display = 'none';
+    document.getElementById('user-ranking-modal').style.display = 'none';
 }
 
 // Mostrar tela de cadastro
@@ -60,8 +63,7 @@ function showPuzzle() {
 async function register() {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    const consent = document.getElementById('consent').checked;
-    console.log("Consent: ",consent);
+    const consentGiven = document.getElementById('consent').checked;
 
     if (!consent) {
         alert('Você deve concordar com a coleta de dados.');
@@ -69,10 +71,11 @@ async function register() {
     }
 
     try {
+        
         const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password,consent})
+            body: JSON.stringify({email, password,consentGiven})
         });
         const result = await response.text();
         if (response.ok) {
@@ -117,7 +120,7 @@ async function login() {
             if (token) {
                 showPuzzle();
                 localStorage.setItem('jwt', token);
-                //token = localStorage.getItem('jwt');
+                token = localStorage.getItem('jwt');
                 loadImageLibrary();
                 document.getElementById('auth-section').style.display = 'none';
                 document.getElementById('puzzle').style.display = 'block';
@@ -334,7 +337,7 @@ function renderPieceColumn(cuts) {
     const column = document.getElementById('piece-column');
     column.innerHTML = '';
     const gridSize = Math.sqrt(cuts);
-    const pieceSize = 400 / gridSize;
+    const pieceSize = 500 / gridSize;
     availablePieces.forEach((pieceIndex) => {
         const pieceElement = document.createElement('div');
         pieceElement.className = 'puzzle-piece';
@@ -468,6 +471,25 @@ async function verifyPuzzle(cuts) {
             } catch (error) {
                 console.error("Erro ao salvar estatísticas:", error);
             }
+
+                        // Salva ranking do jogo no back-end
+            try {
+                await fetch('/api/ranking/save-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        percentualAcertos: percentualAcertos,
+                        tempoTotalJogado: minutos,
+                        totalCortes: cortes,
+                        image: imageSelect
+                    })
+                });
+            } catch (error) {
+                console.error("Erro ao salvar ranking:", error);
+            }
         }
 
 
@@ -526,12 +548,116 @@ function startPuzzle() {
             previewImage.style.display = 'block';
             processImage(img, cuts);
         };
+        console.log("Objeto imageSelect: ",imageSelect," tag img: ",img);
         img.onerror = () => alert('Falha ao carregar a imagem da biblioteca.');
     } else {
         alert('Selecione ou carregue uma imagem!');
     }
     startTime = Date.now(); // marca o início
 }
+
+async function exibirHistoricoUsuario(){
+    const token = localStorage.getItem("jwt");
+    fetch("http://localhost:8080/api/sessions/user", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const historyList = document.getElementById("history-list");
+        historyList.innerHTML = "";
+        data.forEach(session => {
+            const item = document.createElement("div");
+            item.innerHTML = `
+                <p><strong>Data:</strong> ${new Date(session.date).toLocaleString()}</p>
+                <p><strong>Acertos:</strong> ${session.percentualAcertos}%</p>
+                <p><strong>Tempo:</strong> ${session.tempoTotalJogado}s</p>
+                <p><strong>Cortes:</strong> ${session.totalCortes}</p>
+                <hr>
+            `;
+            historyList.appendChild(item);
+        });
+        document.getElementById("user-history-modal").style.display = "block";
+    });
+}
+
+document.getElementById("history-icon").addEventListener("click", async ()=>{
+    //const token = localStorage.getItem("jwt");
+    try{
+        const token = localStorage.getItem("jwt");
+        const response = await fetch("http://localhost:8080/api/session/user", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }else if(response.ok){
+          const data = await response.json(); 
+          const historyList = document.getElementById("history-list");
+          historyList.innerHTML = "";
+          data.forEach(session => {
+                const item = document.createElement("div");
+                item.innerHTML = `
+                    <p><strong>Data:</strong> ${new Date(session.date).toLocaleString()}</p>
+                    <p><strong>Acertos:</strong> ${session.percentualAcertos}%</p>
+                    <p><strong>Tempo:</strong> ${session.tempoTotalJogado}s</p>
+                    <p><strong>Cortes:</strong> ${session.totalCortes}</p><p><strong>Image:</strong> ${session.image}</p>
+                    <p><strong>Usuário:</strong> ${session.user}</p>
+                    <hr>
+                `;
+                historyList.appendChild(item); 
+          });
+          document.getElementById("user-history-modal").style.display = "block";
+        }  
+    }catch (error) {
+        console.error('Error ao buscar histórico:', error);
+    }
+});
+
+document.getElementById("ranking-icon").addEventListener("click", async ()=>{
+    //const token = localStorage.getItem("jwt");
+    try{
+        const token = localStorage.getItem("jwt");
+        const response = await fetch("http://localhost:8080/api/ranking/sessions", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }else if(response.ok){
+          const data = await response.json(); 
+          const historyList = document.getElementById("ranking-list");
+          historyList.innerHTML = "";
+          data.forEach(session => {
+                const item = document.createElement("div");
+                item.innerHTML = `
+                    <p><strong>Data:</strong> ${new Date(session.date).toLocaleString()}</p>
+                    <p><strong>Acertos:</strong> ${session.percentualAcertos}%</p>
+                    <p><strong>Tempo:</strong> ${session.tempoTotalJogado}s</p>
+                    <p><strong>Cortes:</strong> ${session.totalCortes}</p><p><strong>Image:</strong> ${session.image}</p>
+                    <p><strong>Usuário:</strong> ${session.user}</p>
+                    <hr>
+                `;
+                historyList.appendChild(item); 
+          });
+          document.getElementById("user-ranking-modal").style.display = "block";
+        }  
+    }catch (error) {
+        console.error('Error ao buscar histórico:', error);
+    }
+});
+
+document.getElementById("close-history").addEventListener("click", () => {
+    document.getElementById("user-history-modal").style.display = "none";
+});
+
+document.getElementById("close-ranking").addEventListener("click", () => {
+    document.getElementById("user-ranking-modal").style.display = "none";
+});
+
 
 // Event listeners
 document.getElementById('image-select').addEventListener('change', () => {

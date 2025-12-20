@@ -20,7 +20,12 @@
             <div id="div-puzzle-logo">
                 <img id="puzzle-logo" src="images/logo-aprender-codar-games-ia.png" alt="Imagem do Puzzle">
             </div>
-            
+            <div id="history-icon" title="Histórico Pessoal">
+                <img src="images/lista.png" id="history" alt="Histórico">
+            </div>
+            <div id="ranking-icon" title="Ranking Total">
+                <img src="images/trofeu.jpg" id="ranking" alt="Ranking">
+            </div>
         </div>
     </header>
 
@@ -64,7 +69,7 @@
                     </select>
                 </div>
                 <div class="div-select-image">
-                    <label for="image-select" id="titulo-image">Escolher da biblioteca:</label>
+                    <label for="image-select" id="titulo-image">Escolher biblioteca:</label>
                     <select id="image-select">
                         <option value="">Selecione imagem</option>
                     </select>
@@ -93,6 +98,31 @@
            
         </section>
     </main>
+    <div id="user-history-modal" class="modal">
+
+        <div class="modal-content">
+
+            
+                <div class="header-container-modal" >
+                    <span class="close-button" id="close-history">&times;</span>
+                    <h2>Histórico de Jogos</h2>
+                </div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <div id="user-ranking-modal" class="modal">
+
+        <div class="modal-content">
+
+            
+                <div class="header-container-modal" >
+                    <span class="close-button" id="close-ranking">&times;</span>
+                    <h2>Ranking de Jogos</h2>
+                </div>
+            <div id="ranking-list"></div>
+        </div>
+    </div>
 
     <footer>
         <p>© 2025 Aprender a Fazer Games com IA. Todos os direitos reservados.</p>

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codargamescomia.puzzle.entity.PuzzleImage;
 import com.codargamescomia.puzzle.repository.PuzzleImageRepository;
 
+@CrossOrigin(
+	    origins = {
+	        "https://puzzlegame.onrender.com",
+	        "http://localhost:5500"
+	    }
+	)
 @RestController
 @RequestMapping("/api/puzzle")
 public class PuzzleController {
@@ -35,9 +42,9 @@ public class PuzzleController {
     
     @GetMapping("/images")
     public ResponseEntity<List<PuzzleImage>> getImages() {
-        //logger.info("Handling GET /api/puzzle/images");
+        logger.info("Handling GET /api/puzzle/images");
         List<PuzzleImage> images = imageRepository.findAll();
-        //logger.info("Found {} images", images.size());
+        logger.info("Found {} images", images.size());
         return ResponseEntity.ok(images);
     }
 
