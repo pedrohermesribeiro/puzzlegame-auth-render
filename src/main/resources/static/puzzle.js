@@ -558,7 +558,7 @@ function startPuzzle() {
 
 async function exibirHistoricoUsuario(){
     const token = localStorage.getItem("jwt");
-    fetch("http://localhost:8080/api/sessions/user", {
+    fetch("https://puzzlegame-auth-render.onrender.com/api/sessions/user", {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -586,7 +586,7 @@ document.getElementById("history-icon").addEventListener("click", async ()=>{
     //const token = localStorage.getItem("jwt");
     try{
         const token = localStorage.getItem("jwt");
-        const response = await fetch("http://localhost:8080/api/session/user", {
+        const response = await fetch("https://puzzlegame-auth-render.onrender.com/api/session/user", {
             headers: {
                 "Authorization": "Bearer " + token
             }
@@ -620,7 +620,7 @@ document.getElementById("ranking-icon").addEventListener("click", async ()=>{
     //const token = localStorage.getItem("jwt");
     try{
         const token = localStorage.getItem("jwt");
-        const response = await fetch("http://localhost:8080/api/ranking/sessions", {
+        const response = await fetch("https://puzzlegame-auth-render.onrender.com/api/ranking/sessions", {
             headers: {
                 "Authorization": "Bearer " + token
             }
