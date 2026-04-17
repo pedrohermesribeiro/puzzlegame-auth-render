@@ -66,7 +66,7 @@ public class AuthController {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setConsentGiven(request.getConsentGiven());
-        user.setPremium(false);
+        user.setPremium(true);
         userRepository.save(user);
 
         return ResponseEntity.ok("Usuário registrado com sucesso");
